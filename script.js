@@ -146,7 +146,29 @@ addressInput.addEventListener("input", function(event){
     }
 })
 
+
+// Finalziar pedido
 checkoutBtn.addEventListener("click", function(){
+
+    const isOpen = checkRestaurantOpen()
+    if(!isOpen){
+
+        Toastify({
+            text: "Ops o restaurante  esta fechado!",
+            duration: 3000,
+            close: true,
+            gravity: "top", // `top` or `bottom`
+            position: "left", // `left`, `center` or `right`
+            stopOnFocus: true, // Prevents dismissing of toast on hover
+            style: {
+              background: "#ef4444",
+            },
+          }).showToast()
+
+        return
+    }
+
+
     if(cart.length === 0) return;
 
     if(addressInput.value === ""){
@@ -154,4 +176,40 @@ checkoutBtn.addEventListener("click", function(){
         addressInput.classList.add("border-red-500")
         return
     }
+
+    // Enviar o pedido para api whatsapp
+    const cartItem = cart.map((item) => {
+        return (
+
+            ` ${item.name}  Quantidade: ${item.quantity} Preço: R$${item.price} |`
+        )
+    }).join("")
+
+    const message = encodeURIComponent(cartItem)
+    const phone = "67996123728"
+
+    window.open(`https://wa.me/${phone}?text=${message} Endereço: ${addressInput.value}`, "_blank")
+
+    cart = []
+    updateCartModal()
+
 })
+
+
+// Verificar a hora e manipular o card horario
+function checkRestaurantOpen(){
+    const data = new Date()
+    const hora = data.getHours()
+    return hora >= 18 && hora < 22 // true = restaurante aberto
+}
+
+const spanItem = document.getElementById("date-span")
+const isOpen = checkRestaurantOpen()
+
+if(isOpen){
+    spanItem.classList.remove("bg-red-500")
+    spanItem.classList.add("bg-green-600")
+} else {
+    spanItem.classList.remove("bg-green-600")
+    spanItem.classList.add("bg-red-500")
+}
